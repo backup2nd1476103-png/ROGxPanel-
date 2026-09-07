@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zura Admin • Control Center</title>
+<meta name="theme-color" content="#020617">
+<meta name="description" content="Zura administrator control center">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+:root{--bg:#020617;--panel:rgba(15,23,42,.72);--border:rgba(139,92,246,.3);--purple:#8b5cf6;--blue:#3b82f6;--green:#10b981;--red:#ef4444;--yellow:#f59e0b;--text:#f8fafc;--muted:#94a3b8}
+*{box-sizing:border-box;margin:0;padding:0;font-family:Segoe UI,Tahoma,sans-serif}
+body{min-height:100vh;color:var(--text);background:radial-gradient(ellipse at bottom,#1e1b4b 0%,#020617 70%);overflow-x:hidden}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.35;background-image:radial-gradient(#fff 1px,transparent 1px);background-size:80px 80px}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+.hidden{display:none!important}
+.layout{display:flex;min-height:100vh}
+.sidebar{width:250px;position:fixed;left:0;top:0;bottom:0;padding:24px 16px;background:rgba(2,6,23,.88);backdrop-filter:blur(18px);border-right:1px solid var(--border);z-index:20}
+.brand{text-align:center;margin-bottom:25px}.brand-logo{width:62px;height:62px;border-radius:50%;display:grid;place-items:center;margin:auto;background:linear-gradient(135deg,var(--purple),var(--blue));box-shadow:0 0 25px rgba(139,92,246,.5);font-size:1.5rem}.brand h2{margin-top:10px;font-size:1.35rem}.brand small{color:var(--muted)}
+.nav-title{font-size:.7rem;letter-spacing:2px;color:var(--muted);margin:20px 10px 8px;text-transform:uppercase}
+.nav button{width:100%;display:flex;align-items:center;gap:12px;padding:13px 14px;margin:4px 0;border:0;background:transparent;color:var(--muted);border-radius:12px;text-align:left;font-weight:650}.nav button:hover,.nav button.active{background:rgba(139,92,246,.14);color:#fff}.nav button.active{border-left:3px solid var(--purple)}
+.sidebar-bottom{position:absolute;left:16px;right:16px;bottom:18px}.logout{color:#f87171!important}
+.main{margin-left:250px;width:calc(100% - 250px);padding:25px;position:relative}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:15px;margin-bottom:22px}.topbar h1{font-size:1.7rem}.topbar p{color:var(--muted);font-size:.85rem;margin-top:4px}
+.admin-pill{padding:10px 14px;border:1px solid var(--border);border-radius:12px;background:var(--panel);color:var(--muted)}
+.page{display:none}.page.active{display:block}
+.grid{display:grid;gap:18px}.stats{grid-template-columns:repeat(5,minmax(0,1fr))}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:18px;padding:20px;backdrop-filter:blur(16px);box-shadow:0 8px 30px rgba(0,0,0,.3)}
+.stat{display:flex;justify-content:space-between;align-items:center}.stat small{color:var(--muted);text-transform:uppercase;letter-spacing:.5px}.stat strong{display:block;font-size:1.65rem;margin-top:8px}.icon{width:48px;height:48px;border-radius:13px;display:grid;place-items:center;background:rgba(59,130,246,.13);color:var(--blue);font-size:1.25rem}.green{color:#34d399}.red{color:#f87171}.yellow{color:#fbbf24}.purple{color:#a78bfa}
+.section-title{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:15px}.section-title h2{font-size:1.05rem}.section-title span{color:var(--muted);font-size:.8rem}
+.two{grid-template-columns:1.4fr 1fr}.three{grid-template-columns:repeat(3,1fr)}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:15px}.search{flex:1;min-width:220px}
+input,select,textarea{width:100%;padding:11px 13px;border-radius:10px;border:1px solid rgba(255,255,255,.1);background:rgba(0,0,0,.35);color:#fff;outline:0}input:focus,select:focus,textarea:focus{border-color:var(--purple);box-shadow:0 0 12px rgba(139,92,246,.25)}
+.btn{border:0;border-radius:10px;padding:10px 13px;font-weight:700;color:#fff;background:linear-gradient(135deg,var(--purple),var(--blue));}.btn:hover{filter:brightness(1.12)}.btn.secondary{background:rgba(255,255,255,.06);border:1px solid var(--border);color:var(--muted)}.btn.success{background:linear-gradient(135deg,#059669,var(--green))}.btn.danger{background:linear-gradient(135deg,#b91c1c,var(--red))}.btn.warn{background:linear-gradient(135deg,#b45309,var(--yellow))}
+table{width:100%;border-collapse:collapse;min-width:760px}th,td{text-align:left;padding:12px;border-bottom:1px solid rgba(255,255,255,.07);font-size:.84rem}th{color:var(--muted);font-size:.72rem;text-transform:uppercase;background:rgba(0,0,0,.25)}tr:hover td{background:rgba(139,92,246,.05)}.table-wrap{overflow:auto}
+.badge{display:inline-block;padding:4px 9px;border-radius:999px;font-size:.68rem;font-weight:800;text-transform:uppercase}.pending{background:rgba(245,158,11,.14);color:#fbbf24;border:1px solid rgba(245,158,11,.3)}.success-b{background:rgba(16,185,129,.14);color:#34d399;border:1px solid rgba(16,185,129,.3)}.cancel{background:rgba(239,68,68,.14);color:#f87171;border:1px solid rgba(239,68,68,.3)}.active-b{background:rgba(16,185,129,.14);color:#34d399}.blocked{background:rgba(239,68,68,.14);color:#f87171}
+.actions{display:flex;gap:6px;flex-wrap:wrap}.actions .btn{padding:7px 9px;font-size:.72rem}
+.kpi-list{display:flex;flex-direction:column;gap:11px}.kpi-row{display:flex;justify-content:space-between;padding:11px 12px;background:rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.05);border-radius:10px}.muted{color:var(--muted)}
+.form-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:13px}.form-grid .full{grid-column:1/-1}.label{font-size:.75rem;color:var(--muted);margin-bottom:6px;display:block}
+.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.72);backdrop-filter:blur(5px);display:none;place-items:center;z-index:100;padding:15px}.modal-backdrop.open{display:grid}.modal{width:min(760px,100%);max-height:90vh;overflow:auto;background:#0b1225;border:1px solid var(--border);border-radius:18px;padding:22px;box-shadow:0 20px 70px #000}.modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}.close{border:0;background:rgba(255,255,255,.06);color:#fff;width:36px;height:36px;border-radius:9px}
+.login{min-height:100vh;display:grid;place-items:center;padding:20px}.login-card{width:min(420px,100%);background:var(--panel);border:1px solid var(--border);border-radius:22px;padding:32px;backdrop-filter:blur(20px);box-shadow:0 10px 50px rgba(0,0,0,.5)}.login-card h1{text-align:center;margin-bottom:7px}.login-card p{text-align:center;color:var(--muted);margin-bottom:25px}.login-card .field{margin-bottom:15px}.error{color:#f87171;font-size:.8rem;margin:10px 0}.note{font-size:.72rem;color:var(--muted);line-height:1.5;margin-top:12px}
+.console{height:500px;display:flex;flex-direction:column}.console-body{flex:1;overflow:auto;display:flex;flex-direction:column;gap:9px}.log{padding:11px;border-radius:10px;background:rgba(0,0,0,.32);border:1px solid rgba(255,255,255,.05);font-family:Consolas,monospace;font-size:.78rem}.log b{color:#60a5fa}.log span{color:var(--muted)}
+@media(max-width:1100px){.stats{grid-template-columns:repeat(3,1fr)}.two,.three{grid-template-columns:1fr}}
+@media(max-width:800px){.sidebar{width:72px;padding:18px 9px}.brand h2,.brand small,.nav-title,.nav button span{display:none}.brand-logo{width:48px;height:48px}.nav button{justify-content:center;padding:13px 5px}.sidebar-bottom{left:9px;right:9px}.main{margin-left:72px;width:calc(100% - 72px);padding:16px}.stats{grid-template-columns:repeat(2,1fr)}.form-grid{grid-template-columns:1fr}}
+@media(max-width:500px){.stats{grid-template-columns:1fr}.topbar h1{font-size:1.35rem}}
+
+/* Professional polish */
+:root{--panel2:rgba(15,23,42,.9);--glass:rgba(255,255,255,.045);--shadow:0 18px 55px rgba(0,0,0,.35)}
+body{background:radial-gradient(circle at 15% 0%,rgba(59,130,246,.12),transparent 28%),radial-gradient(circle at 85% 20%,rgba(139,92,246,.12),transparent 30%),#020617}
+.card{box-shadow:var(--shadow);transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease}
+.card:hover{border-color:rgba(139,92,246,.42)}
+.btn{transition:transform .16s ease,filter .16s ease,box-shadow .16s ease}
+.btn:active{transform:scale(.97)}.btn:hover{box-shadow:0 8px 22px rgba(59,130,246,.16)}
+.topbar{position:sticky;top:0;z-index:10;padding:10px 0;background:linear-gradient(180deg,#020617 70%,transparent);backdrop-filter:blur(8px)}
+.status-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 10px var(--green);margin-right:7px}
+.mobile-menu{display:none;border:1px solid var(--border);background:var(--panel);color:#fff;border-radius:10px;width:40px;height:40px}
+.overlay{display:none}
+.toast-wrap{position:fixed;right:20px;bottom:20px;z-index:300;display:flex;flex-direction:column;gap:10px;max-width:min(380px,calc(100vw - 40px))}
+.toast{padding:13px 15px;border:1px solid var(--border);border-radius:13px;background:#0b1225ee;backdrop-filter:blur(16px);box-shadow:0 15px 40px #0008;animation:toastIn .25s ease}
+.toast.success{border-color:rgba(16,185,129,.4)}.toast.error{border-color:rgba(239,68,68,.4)}
+@keyframes toastIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.empty{padding:28px;text-align:center;color:var(--muted)}
+.metric-up{font-size:.7rem;color:#34d399;margin-left:6px}
+@media(max-width:800px){
+ .mobile-menu{display:inline-grid;place-items:center}.topbar{padding-top:4px}.topbar>div:first-child{display:flex;align-items:center;gap:10px}
+ .sidebar{transform:translateX(-100%);transition:transform .25s ease;width:250px;padding:24px 16px}.sidebar.open{transform:none}.brand h2,.brand small,.nav-title,.nav button span{display:block}.brand-logo{width:58px;height:58px}.nav button{justify-content:flex-start;padding:13px 14px}.sidebar-bottom{left:16px;right:16px}
+ .overlay{position:fixed;inset:0;background:#0008;z-index:19;backdrop-filter:blur(2px)}.overlay.open{display:block}
+ .main{margin-left:0;width:100%;padding:12px}.admin-pill{padding:9px 10px}.admin-pill span{display:none}
+}
+@media(max-width:500px){.stats{gap:12px}.card{padding:15px;border-radius:15px}.topbar h1{font-size:1.2rem}.topbar p{font-size:.76rem}.toolbar .btn{flex:1}.search{min-width:100%}}
+</style>
+</head>
+<body>
+<div id="loginScreen" class="login">
+  <div class="login-card">
+    <div class="brand-logo"><i class="fas fa-shield-halved"></i></div>
+    <h1>Zura Admin</h1><p>Administrator control center</p>
+    <div class="field"><label class="label">Admin Email</label><input id="adminEmail" type="email" value="admin@zura.local"></div>
+    <div class="field"><label class="label">Password</label><input id="adminPass" type="password" value="admin1234"></div>
+    <div id="loginError" class="error"></div>
+    <button class="btn" style="width:100%" onclick="adminLogin()"><i class="fas fa-right-to-bracket"></i> Sign In</button>
+    <div class="note">Default local-demo credentials: admin@zura.local / admin1234. Change them from Settings after signing in.</div>
+  </div>
+</div>
+
+<div id="app" class="layout hidden">
+<aside id="sidebar" class="sidebar">
+  <div class="brand"><div class="brand-logo"><i class="fas fa-shield-halved"></i></div><h2>Zura Admin</h2><small>Control Center</small></div>
+  <div class="nav">
+    <div class="nav-title">Main</div>
+    <button data-page="dashboard" class="active" onclick="showPage('dashboard')"><i class="fas fa-gauge"></i><span>Dashboard</span></button>
+    <button data-page="users" onclick="showPage('users')"><i class="fas fa-users"></i><span>Users</span></button>
+    <button data-page="withdrawals" onclick="showPage('withdrawals')"><i class="fas fa-money-bill-transfer"></i><span>Withdrawals</span></button>
+    <button data-page="otp" onclick="showPage('otp')"><i class="fas fa-message"></i><span>OTP / Numbers</span></button>
+    <div class="nav-title">System</div>
+    <button data-page="referrals" onclick="showPage('referrals')"><i class="fas fa-user-group"></i><span>Referrals</span></button>
+    <button data-page="console" onclick="showPage('console')"><i class="fas fa-terminal"></i><span>Global Console</span></button>
+    <button data-page="settings" onclick="showPage('settings')"><i class="fas fa-gear"></i><span>Settings</span></button>
+  </div>
+  <div class="sidebar-bottom"><button class="nav logout" onclick="logout()"><i class="fas fa-right-from-bracket"></i><span>Logout</span></button></div>
+</aside>
+
+<div id="menuOverlay" class="overlay" onclick="closeSidebar()"></div>
+<main class="main">
+<header class="topbar"><div><button class="mobile-menu" onclick="toggleSidebar()" aria-label="Menu"><i class="fas fa-bars"></i></button><h1 id="pageTitle">Dashboard</h1><p id="pageSub">Live overview of the Zura panel</p></div><div class="admin-pill"><span class="status-dot"></span><i class="fas fa-user-shield"></i> <span id="adminName">Administrator</span></div></header>
+
+<section id="page-dashboard" class="page active">
+  <div class="grid stats">
+    <div class="card stat"><div><small>Users</small><strong id="sUsers">0</strong></div><div class="icon"><i class="fas fa-users"></i></div></div>
+    <div class="card stat"><div><small>Available Balance</small><strong id="sBalance">$0.0000</strong></div><div class="icon green"><i class="fas fa-wallet"></i></div></div>
+    <div class="card stat"><div><small>Locked Balance</small><strong id="sLocked">$0.0000</strong></div><div class="icon red"><i class="fas fa-lock"></i></div></div>
+    <div class="card stat"><div><small>Pending Withdrawals</small><strong id="sPending">0</strong></div><div class="icon yellow"><i class="fas fa-clock"></i></div></div>
+    <div class="card stat"><div><small>Total OTPs</small><strong id="sOtp">0</strong></div><div class="icon purple"><i class="fas fa-message"></i></div></div>
+  </div>
+  <div class="grid two" style="margin-top:18px">
+    <div class="card"><div class="section-title"><h2>OTP Activity</h2><span>All users</span></div><canvas id="otpChart" height="130"></canvas></div>
+    <div class="card"><div class="section-title"><h2>Quick Actions</h2></div><div class="actions">
+      <button class="btn" onclick="showPage('withdrawals')"><i class="fas fa-money-check-dollar"></i> Review Withdrawals</button>
+      <button class="btn secondary" onclick="showPage('users')"><i class="fas fa-users"></i> Manage Users</button>
+      <button class="btn secondary" onclick="showPage('otp')"><i class="fas fa-message"></i> View OTPs</button>
+      <button class="btn secondary" onclick="showPage('console')"><i class="fas fa-terminal"></i> Open Console</button>
+    </div></div>
+  </div>
+  <div class="card" style="margin-top:18px"><div class="section-title"><h2>Recent Withdrawal Requests</h2><span id="recentCount">0</span></div><div class="table-wrap"><table><thead><tr><th>Date</th><th>User</th><th>Method</th><th>Account</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead><tbody id="recentWithdrawals"></tbody></table></div></div>
+</section>
+
+<section id="page-users" class="page">
+  <div class="card"><div class="section-title"><h2>User Management</h2><span id="userCount">0 users</span></div>
+    <div class="toolbar"><input class="search" id="userSearch" placeholder="Search name, email, Telegram or User ID..." oninput="renderUsers()"><button class="btn" onclick="openUserModal()"><i class="fas fa-user-plus"></i> Add User</button><button class="btn secondary" onclick="refreshAll()"><i class="fas fa-rotate"></i> Refresh</button></div>
+    <div class="table-wrap"><table><thead><tr><th>User</th><th>Contact</th><th>Balance</th><th>Locked</th><th>OTP</th><th>Numbers</th><th>Status</th><th>Actions</th></tr></thead><tbody id="usersBody"></tbody></table></div>
+  </div>
+</section>
+
+<section id="page-withdrawals" class="page">
+  <div class="card"><div class="section-title"><h2>Withdrawal Requests</h2><span>Approve or cancel pending requests</span></div>
+    <div class="toolbar"><input class="search" id="wdSearch" placeholder="Search user, method, account..." oninput="renderWithdrawals()"><select id="wdStatus" style="max-width:180px" onchange="renderWithdrawals()"><option value="">All Status</option><option value="pending">Pending</option><option value="success">Approved</option><option value="cancelled">Cancelled</option></select><button class="btn secondary" onclick="refreshAll()"><i class="fas fa-rotate"></i> Refresh</button></div>
+    <div class="table-wrap"><table><thead><tr><th>Date</th><th>User</th><th>Method</th><th>Account</th><th>Amount</th><th>Status</th><th>Actions</th></tr></thead><tbody id="withdrawalsBody"></tbody></table></div>
+  </div>
+</section>
+
+<section id="page-otp" class="page">
+  <div class="card"><div class="section-title"><h2>OTP / Number Activity</h2><span>Aggregated from user histories</span></div>
+    <div class="toolbar"><input class="search" id="otpSearch" placeholder="Search number, OTP, range, service or user..." oninput="renderOtps()"><button class="btn secondary" onclick="renderOtps()"><i class="fas fa-rotate"></i> Refresh</button></div>
+    <div class="table-wrap"><table><thead><tr><th>Time</th><th>User</th><th>Number</th><th>OTP</th><th>Range</th><th>Status</th><th>SMS</th></tr></thead><tbody id="otpBody"></tbody></table></div>
+  </div>
+</section>
+
+<section id="page-referrals" class="page">
+  <div class="grid two">
+    <div class="card"><div class="section-title"><h2>Referral Transactions</h2><span id="refCount">0</span></div><div class="table-wrap"><table><thead><tr><th>Date</th><th>Referrer</th><th>Referred</th><th>Bonus</th><th>Commission</th></tr></thead><tbody id="refsBody"></tbody></table></div></div>
+    <div class="card"><div class="section-title"><h2>Referral Leaders</h2></div><div id="refLeaders" class="kpi-list"></div></div>
+  </div>
+</section>
+
+<section id="page-console" class="page">
+  <div class="card console"><div class="section-title"><h2><i class="fas fa-terminal purple"></i> Global Console</h2><div><button class="btn secondary" onclick="fetchConsole()"><i class="fas fa-rotate"></i> Sync</button></div></div>
+    <div class="toolbar"><input id="consoleSearch" class="search" placeholder="Filter logs..." oninput="renderConsole()"><span class="admin-pill" id="consoleTimer">Ready</span></div>
+    <div class="console-body" id="consoleBody"><div class="muted">Click Sync to load API logs.</div></div>
+  </div>
+</section>
+
+<section id="page-settings" class="page">
+  <div class="grid two">
+    <div class="card"><div class="section-title"><h2>Admin Account</h2></div><div class="form-grid">
+      <div><label class="label">Admin Email</label><input id="setEmail"></div><div><label class="label">New Password</label><input id="setPass" type="password" placeholder="Leave blank to keep current"></div>
+      <div class="full"><button class="btn" onclick="saveAdminSettings()"><i class="fas fa-save"></i> Save Admin Settings</button></div>
+    </div></div>
+    <div class="card"><div class="section-title"><h2>Panel Controls</h2></div>
+      <div class="kpi-list"><div class="kpi-row"><span>Shared database key</span><b>zura_static_database_v1</b></div><div class="kpi-row"><span>Withdrawal minimum</span><b>$0.0050</b></div><div class="kpi-row"><span>Maximum withdrawal</span><b>$5.00</b></div><div class="kpi-row"><span>OTP reward</span><b>$0.0030</b></div></div>
+      <p class="note">GitHub Pages hosts this panel as a static site. User data is stored in this browser's localStorage, while API reads use the configured public API endpoint. For multi-device/shared admin data, connect a real backend/database.</p>
+    </div>
+  </div>
+</section>
+</main>
+</div>
+<div id="toastWrap" class="toast-wrap"></div>
+
+<div id="modalBackdrop" class="modal-backdrop" onclick="if(event.target===this)closeModal()"><div class="modal"><div class="modal-head"><h2 id="modalTitle">User</h2><button class="close" onclick="closeModal()">×</button></div><div id="modalBody"></div></div></div>
+
+<script>
+const DB_KEY='zura_static_database_v1', API='https://api.2oo9.cloud/MXS47FLFX0U/tnevs/@public/api', KEY='MNYFKE0PLI0';
+let db={users:[],withdrawals:[],settings:[],referral_transactions:[],next_id:1}, otpRows=[], chart=null;
+const $=id=>document.getElementById(id), money=v=>'$'+Number(v||0).toFixed(4), esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+function normalize(){db=db&&typeof db==='object'?db:{};db.users=Array.isArray(db.users)?db.users:[];db.withdrawals=Array.isArray(db.withdrawals)?db.withdrawals:[];db.settings=Array.isArray(db.settings)?db.settings:[];db.referral_transactions=Array.isArray(db.referral_transactions)?db.referral_transactions:[];db.next_id=Number(db.next_id||1)}
+function loadDB(){try{db=JSON.parse(localStorage.getItem(DB_KEY)||'null')||db}catch{}normalize()}
+function saveDB(){localStorage.setItem(DB_KEY,JSON.stringify(db))}
+function hash(t){return crypto.subtle.digest('SHA-256',new TextEncoder().encode(t)).then(b=>Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join(''))}
+function adminConfig(){return JSON.parse(localStorage.getItem('zura_admin_config')||'null')||{email:'admin@zura.local',passHash:''}}
+async function adminLogin(){let e=$('adminEmail').value.trim().toLowerCase(),p=$('adminPass').value,c=adminConfig();if(!c.passHash)c.passHash=await hash('admin1234');if(e!==c.email||await hash(p)!==c.passHash){$('loginError').textContent='Invalid administrator credentials';return}sessionStorage.setItem('zura_admin_auth','1');$('loginScreen').classList.add('hidden');$('app').classList.remove('hidden');$('adminName').textContent=c.email;refreshAll();toast('Signed in successfully')}
+function logout(){sessionStorage.removeItem('zura_admin_auth');closeSidebar();$('app').classList.add('hidden');$('loginScreen').classList.remove('hidden');$('adminPass').value='';}
+function toast(message,type='success'){let w=$('toastWrap'),x=document.createElement('div');x.className='toast '+type;x.textContent=message;w.appendChild(x);setTimeout(()=>x.remove(),3200)}
+function toggleSidebar(){$('sidebar')?.classList.toggle('open');$('menuOverlay')?.classList.toggle('open')}
+function closeSidebar(){$('sidebar')?.classList.remove('open');$('menuOverlay')?.classList.remove('open')}
+function showPage(p){closeSidebar();document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));$('page-'+p).classList.add('active');document.querySelectorAll('.nav button[data-page]').forEach(x=>x.classList.toggle('active',x.dataset.page===p));let names={dashboard:['Dashboard','Live overview of the Zura panel'],users:['Users','Manage accounts, balances and access'],withdrawals:['Withdrawals','Review, approve or cancel payout requests'],otp:['OTP / Numbers','Inspect user number and OTP activity'],referrals:['Referrals','Referral bonuses and commission history'],console:['Global Console','Live services, servers and API logs'],settings:['Settings','Administrator and panel controls']};$('pageTitle').textContent=names[p][0];$('pageSub').textContent=names[p][1];if(p==='otp')renderOtps();if(p==='console')renderConsole()}
+function refreshAll(){loadDB();renderStats();renderUsers();renderWithdrawals();renderRecent();renderRefs();renderOtps();renderChart();loadSettings()}
+function userById(id){return db.users.find(u=>String(u.id)===String(id))}
+function renderStats(){let bal=db.users.reduce((a,u)=>a+Number(u.balance||0),0),locked=db.users.reduce((a,u)=>a+Number(u.locked_balance||0),0),pending=db.withdrawals.filter(w=>w.status==='pending').length,otp=db.users.reduce((a,u)=>a+Number(u.total_otp||0),0);$('sUsers').textContent=db.users.length;$('sBalance').textContent=money(bal);$('sLocked').textContent=money(locked);$('sPending').textContent=pending;$('sOtp').textContent=otp}
+function statusBadge(s){s=s||'pending';let cls=s==='pending'?'pending':s==='success'?'success-b':'cancel';return `<span class="badge ${cls}">${esc(s)}</span>`}
+function renderUsers(){let q=($('userSearch')?.value||'').toLowerCase(),rows=db.users.filter(u=>[u.fullname,u.email,u.telegram,u.user_id].some(v=>String(v||'').toLowerCase().includes(q)));$('userCount').textContent=rows.length+' users';$('usersBody').innerHTML=rows.length?rows.map(u=>`<tr><td><b>${esc(u.fullname||'User')}</b><br><span class="muted">${esc(u.user_id||'')}</span></td><td>${esc(u.email||'')}<br><span class="muted">${esc(u.telegram||'')}</span></td><td>${money(u.balance)}</td><td>${money(u.locked_balance)}</td><td>${Number(u.total_otp||0)}</td><td>${Number(u.total_numbers||0)}</td><td><span class="badge ${u.status==='blocked'?'blocked':'active-b'}">${u.status==='blocked'?'blocked':'active'}</span></td><td><div class="actions"><button class="btn" onclick="openUserModal(${u.id})">Edit</button><button class="btn warn" onclick="adjustBalance(${u.id})">Balance</button><button class="btn secondary" onclick="toggleUser(${u.id})">${u.status==='blocked'?'Unblock':'Block'}</button><button class="btn danger" onclick="deleteUser(${u.id})">Delete</button></div></td></tr>`).join(''):'<tr><td colspan="8" class="muted">No users found.</td></tr>'}
+function renderWithdrawals(){let q=($('wdSearch')?.value||'').toLowerCase(),st=$('wdStatus')?.value||'',rows=db.withdrawals.filter(w=>{let u=userById(w.user_id),txt=[u?.fullname,u?.email,u?.user_id,w.method,w.account].join(' ').toLowerCase();return(!q||txt.includes(q))&&(!st||w.status===st)}).sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));$('withdrawalsBody').innerHTML=rows.length?rows.map(w=>withdrawalRow(w)).join(''):'<tr><td colspan="7" class="muted">No withdrawal requests.</td></tr>'}
+function withdrawalRow(w){let u=userById(w.user_id);return `<tr><td>${new Date(w.created_at).toLocaleString()}</td><td><b>${esc(u?.fullname||'Unknown')}</b><br><span class="muted">${esc(u?.user_id||w.user_id)}</span></td><td>${esc(w.method||'')}</td><td>${esc(w.account||'')}</td><td>${money(w.amount)}</td><td>${statusBadge(w.status)}</td><td><div class="actions">${w.status==='pending'?`<button class="btn success" onclick="approveWithdrawal(${w.id})">Approve</button><button class="btn danger" onclick="cancelWithdrawal(${w.id})">Cancel</button>`:`<button class="btn secondary" onclick="viewWithdrawal(${w.id})">View</button>`}</div></td></tr>`}
+function renderRecent(){let rows=[...db.withdrawals].sort((a,b)=>new Date(b.created_at)-new Date(a.created_at)).slice(0,8);$('recentCount').textContent=rows.length+' recent';$('recentWithdrawals').innerHTML=rows.length?rows.map(withdrawalRow).join(''):'<tr><td colspan="7" class="muted">No requests yet.</td></tr>'}
+function approveWithdrawal(id){let w=db.withdrawals.find(x=>String(x.id)===String(id));if(!w||w.status!=='pending')return;let u=userById(w.user_id);if(!u)return;if(!confirm('Approve this withdrawal of '+money(w.amount)+'?'))return;u.locked_balance=Math.max(0,Number(u.locked_balance||0)-Number(w.amount||0));w.status='success';w.approved_at=new Date().toISOString();saveDB();refreshAll()}
+function cancelWithdrawal(id){let w=db.withdrawals.find(x=>String(x.id)===String(id));if(!w||w.status!=='pending')return;let u=userById(w.user_id);if(!u)return;if(!confirm('Cancel this withdrawal and return '+money(w.amount)+' to Available Balance?'))return;u.locked_balance=Math.max(0,Number(u.locked_balance||0)-Number(w.amount||0));u.balance=Number(u.balance||0)+Number(w.amount||0);w.status='cancelled';w.cancelled_at=new Date().toISOString();saveDB();refreshAll()}
+function viewWithdrawal(id){let w=db.withdrawals.find(x=>String(x.id)===String(id));let u=userById(w?.user_id);alert(`User: ${u?.fullname||'Unknown'}\\nMethod: ${w?.method}\\nAccount: ${w?.account}\\nAmount: ${money(w?.amount)}\\nStatus: ${w?.status}`)}
+function renderOtps(){otpRows=[];db.users.forEach(u=>{try{let a=JSON.parse(localStorage.getItem('zura_static_history_'+u.id)||'[]');a.forEach(n=>otpRows.push({...n,user:u}))}catch{}});let q=($('otpSearch')?.value||'').toLowerCase();let rows=otpRows.filter(n=>[n.number,n.full_number,n.otp,n.range,n.sms?.message,n.user?.fullname,n.user?.user_id].some(v=>String(v||'').toLowerCase().includes(q))).sort((a,b)=>(b.last_update||b.time||0)-(a.last_update||a.time||0)).slice(0,300);$('otpBody').innerHTML=rows.length?rows.map(n=>`<tr><td>${new Date(Number(n.last_update||n.time)*1000).toLocaleString()}</td><td>${esc(n.user?.fullname||'')}<br><span class="muted">${esc(n.user?.user_id||'')}</span></td><td>${esc(n.full_number||n.number||'')}</td><td><b class="green">${esc(n.otp||'—')}</b></td><td>${esc(n.range||'')}</td><td>${statusBadge(n.status)}</td><td>${esc(n.sms?.message||'—')}</td></tr>`).join(''):'<tr><td colspan="7" class="muted">No OTP history found.</td></tr>'}
+function renderRefs(){let rows=[...db.referral_transactions].sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));$('refCount').textContent=rows.length+' transactions';$('refsBody').innerHTML=rows.length?rows.map(r=>`<tr><td>${new Date(r.created_at).toLocaleString()}</td><td>${esc(r.referrer_user_id)}</td><td>${esc(r.referred_user_id)}</td><td>${money(r.bonus)}</td><td>${money(r.commission)}</td></tr>`).join(''):'<tr><td colspan="5" class="muted">No referral transactions.</td></tr>';let m={};rows.forEach(r=>{m[r.referrer_user_id]=(m[r.referrer_user_id]||0)+Number(r.commission||0)});let top=Object.entries(m).sort((a,b)=>b[1]-a[1]).slice(0,8);$('refLeaders').innerHTML=top.length?top.map((x,i)=>`<div class="kpi-row"><span>#${i+1} ${esc(x[0])}</span><b class="green">${money(x[1])}</b></div>`).join(''):'<div class="muted">No referral data.</div>'}
+function renderChart(){let labels=[],vals=[];for(let i=6;i>=0;i--){let d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-i);labels.push(d.toLocaleDateString('en-GB',{day:'2-digit',month:'short'}));let day=Math.floor(d.getTime()/1000),end=day+86400;vals.push(otpRows.filter(n=>{let t=Number(n.last_update||n.time||0);return t>=day&&t<end&&n.status==='success'}).length)}let c=$('otpChart').getContext('2d');if(chart)chart.destroy();chart=new Chart(c,{type:'line',data:{labels,datasets:[{label:'Successful OTPs',data:vals,tension:.35,fill:true}]},options:{responsive:true,plugins:{legend:{labels:{color:'#94a3b8'}}},scales:{x:{ticks:{color:'#94a3b8'},grid:{color:'rgba(255,255,255,.05)'}},y:{beginAtZero:true,ticks:{color:'#94a3b8'},grid:{color:'rgba(255,255,255,.05)'}}}}})}
+function openUserModal(id){let u=id?userById(id):{fullname:'',email:'',telegram:'',balance:0,locked_balance:0,status:'active',referral:'',referral_bonus:0,referral_commission:0,total_numbers:0,total_otp:0};$('modalTitle').textContent=id?'Edit User':'Create User';$('modalBody').innerHTML=`<div class="form-grid"><div><label class="label">Full Name</label><input id="mName" value="${esc(u.fullname)}"></div><div><label class="label">Email</label><input id="mEmail" value="${esc(u.email)}"></div><div><label class="label">Telegram</label><input id="mTelegram" value="${esc(u.telegram)}"></div><div><label class="label">Status</label><select id="mStatus"><option value="active" ${u.status!=='blocked'?'selected':''}>Active</option><option value="blocked" ${u.status==='blocked'?'selected':''}>Blocked</option></select></div><div><label class="label">Available Balance</label><input id="mBal" type="number" step=".0001" value="${Number(u.balance||0)}"></div><div><label class="label">Locked Balance</label><input id="mLocked" type="number" step=".0001" value="${Number(u.locked_balance||0)}"></div><div><label class="label">Referral Code</label><input id="mRef" value="${esc(u.referral)}"></div><div><label class="label">New Password ${id?'(optional)':''}</label><input id="mPass" type="password"></div><div class="full"><button class="btn" onclick="saveUser(${id||0})"><i class="fas fa-save"></i> Save User</button></div></div>`;$('modalBackdrop').classList.add('open')}
+async function saveUser(id){let u=id?userById(id):null;if(!u){u={id:db.next_id++,user_id:'Z_R'+Math.floor(10000+Math.random()*90000),fullname:'',email:'',password_hash:'',telegram:'',referral:'',balance:0,locked_balance:0,referral_bonus:0,referral_commission:0,created_at:new Date().toISOString(),total_numbers:0,total_otp:0,last_activity:Date.now()};db.users.push(u);db.settings.push({user_id:u.id,dana_number:'',seabank_number:'',binance_id:'',default_method:'dana'})}u.fullname=$('mName').value.trim();u.email=$('mEmail').value.trim().toLowerCase();u.telegram=$('mTelegram').value.trim();u.status=$('mStatus').value;u.balance=Number($('mBal').value||0);u.locked_balance=Number($('mLocked').value||0);u.referral=$('mRef').value.trim();let p=$('mPass').value;if(p){if(p.length<6){alert('Password must be at least 6 characters');return}u.password_hash=await hash(p)}saveDB();closeModal();refreshAll()}
+function adjustBalance(id){let u=userById(id);if(!u)return;let amount=prompt(`Enter adjustment for ${u.fullname}. Use positive to add, negative to subtract.\\nCurrent: ${money(u.balance)}`);if(amount===null)return;amount=Number(amount);if(!Number.isFinite(amount))return alert('Invalid amount');if(Number(u.balance||0)+amount<0)return alert('Available balance cannot be negative');u.balance=Number(u.balance||0)+amount;u.last_activity=Date.now();saveDB();refreshAll()}
+function toggleUser(id){let u=userById(id);if(!u)return;u.status=u.status==='blocked'?'active':'blocked';saveDB();refreshAll()}
+function deleteUser(id){let u=userById(id);if(!u)return;if(!confirm(`Delete ${u.fullname||u.email}? This removes the account and its withdrawal records.`))return;db.users=db.users.filter(x=>x.id!==id);db.withdrawals=db.withdrawals.filter(x=>x.user_id!==id);db.settings=db.settings.filter(x=>x.user_id!==id);saveDB();refreshAll()}
+function closeModal(){$('modalBackdrop').classList.remove('open')}
+function loadSettings(){let c=adminConfig();$('setEmail').value=c.email}
+async function saveAdminSettings(){let c=adminConfig(),email=$('setEmail').value.trim().toLowerCase(),p=$('setPass').value;if(!email)return alert('Email required');c.email=email;if(p)c.passHash=await hash(p);if(!c.passHash)c.passHash=await hash('admin1234');localStorage.setItem('zura_admin_config',JSON.stringify(c));$('adminName').textContent=email;toast('Admin settings saved')}
+let logs=[];
+function renderConsole(){let q=($('consoleSearch')?.value||'').toLowerCase();let rows=logs.filter(x=>JSON.stringify(x).toLowerCase().includes(q));$('consoleBody').innerHTML=rows.length?rows.map(x=>`<div class="log"><b>${esc(x.service||x.sid||'API')}</b> <span>${esc(x.range||x.number||'')}</span><br>${esc(x.message||JSON.stringify(x))}</div>`).join(''):'<div class="muted">No matching logs.</div>'}
+async function fetchConsole(){ $('consoleTimer').textContent='Syncing...';try{let r=await fetch(API+'/success-otp',{headers:{mauthapi:KEY}}),j=await r.json();logs=j?.data?.otps||[];let s;try{let rr=await fetch(API+'/services',{headers:{mauthapi:KEY}}),jj=await rr.json();s=jj?.data?.services||jj?.data||[]}catch{}if(Array.isArray(s))s.forEach(x=>logs.push({service:x.name||x.service||x.sid,message:`Service available; ${Array.isArray(x.ranges)?x.ranges.length:0} ranges`}));$('consoleTimer').textContent='Updated '+new Date().toLocaleTimeString();renderConsole()}catch(e){$('consoleTimer').textContent='Network error';$('consoleBody').innerHTML='<div class="muted">Unable to load API data.</div>'}}
+window.addEventListener('storage',()=>{if(sessionStorage.getItem('zura_admin_auth')==='1')refreshAll()});
+window.addEventListener('DOMContentLoaded',()=>{if(sessionStorage.getItem('zura_admin_auth')==='1'){ $('loginScreen').classList.add('hidden');$('app').classList.remove('hidden');refreshAll()}else loadDB()});
+setInterval(()=>{if(sessionStorage.getItem('zura_admin_auth')==='1')refreshAll()},15000);
+function exportData(){
+  loadDB();
+  const payload={version:1,exported_at:new Date().toISOString(),database:db,admin_config:adminConfig()};
+  const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='zura-admin-backup-'+new Date().toISOString().slice(0,10)+'.json';a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),1000);toast('Backup exported successfully');
+}
+function importData(input){
+  const f=input.files?.[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>{try{
+    const x=JSON.parse(r.result);const incoming=x.database||x;
+    if(!incoming||!Array.isArray(incoming.users)||!Array.isArray(incoming.withdrawals))throw new Error('Invalid backup');
+    if(!confirm('Import this backup and replace the current local database?'))return;
+    db=incoming;normalize();saveDB();if(x.admin_config)localStorage.setItem('zura_admin_config',JSON.stringify(x.admin_config));
+    refreshAll();toast('Backup imported successfully');
+  }catch(e){toast('Invalid backup file','error')} finally{input.value=''}};
+  r.readAsText(f);
+}
+function clearLocalCache(){
+  if(!confirm('Clear the local Zura database from this browser? This cannot be undone without a backup.'))return;
+  localStorage.removeItem(DB_KEY);loadDB();refreshAll();toast('Local database cleared','error');
+}
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){$('modalBackdrop').classList.remove('open');closeSidebar()}});
+
+</script>
+</body>
+</html>
